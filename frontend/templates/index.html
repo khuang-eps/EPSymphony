@@ -10,14 +10,31 @@
 
     <h1>EPSymphony</h1>
 
-    <p id="measureDisplay">Current Measure: 1</p>
+    <label>BPM:</label>
+    <input type="number" id="bpmInput" value="120">
 
-    <button onclick="startPolling()">Start</button>
+    <br><br>
+
+    <input type="file" id="fileInput" accept=".musicxml, .xml, .mxl">
+
+    <br><br>
+
+    <button onclick="loadUploadedScore()">Load Score</button>
+    <button onclick="startAutoScroll()">Start</button>
+    <button onclick="stopAutoScroll()">Stop</button>
+
+    <p id="measureDisplay">Current Measure: 1</p>
 
     <div id="score-container"></div>
 
+    <!-- OSMD -->
     <script src="https://cdn.jsdelivr.net/npm/opensheetmusicdisplay/build/opensheetmusicdisplay.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tone/build/Tone.js"></script>
     <script src="../static/js/analysis.js"></script>
+    <script src="../static/js/play_sheet_music.js"></script>
+
+    <script src="../static/js/autoscroll.js"></script>
+    <script src="../static/js/pdf_viewer.js"></script>
 
 </body>
 

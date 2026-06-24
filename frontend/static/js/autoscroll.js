@@ -1,3 +1,5 @@
+let animationId = null;
+
 function getScrollY(currentTime, times, positions) {
     for (let i = 0; i < times.length - 1; i++) {
         if (currentTime >= times[i] && currentTime < times[i + 1]) {
@@ -27,8 +29,15 @@ function startAutoScroll() {
         let y = getScrollY(currentTime, times, positions);
         scrollToY(y);
 
-        requestAnimationFrame(step);
+        animationId = requestAnimationFrame(step);
     }
 
     step();
+}
+
+function stopAutoScroll() {
+    if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+    }
 }
