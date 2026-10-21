@@ -8,13 +8,18 @@ let pagingMode = "osmd";
 let fittingScore = false;
 let followPlaybackPage = true;
 let isPlaybackActive = false;
+let isPlacingCursor = false;
 
 window.addEventListener("resize", () => {
     if (!window.osmd || fittingScore) return;
     fittingScore = true;
     sizeOsmdPageToContainer();
     window.osmd.render();
-    if (typeof prepareCursor === "function") prepareCursor(window.osmd);
+    if (typeof seekCursorToStart === "function") {
+        seekCursorToStart();
+    } else if (typeof prepareCursor === "function") {
+        prepareCursor(window.osmd);
+    }
     buildScorePageRanges();
     showScorePage(currentScorePage);
     fittingScore = false;
@@ -52,11 +57,25 @@ async function loadUploadedScore() {
     const fileInput = document.getElementById("fileInput");
 
     if (!fileInput.files.length) {
-        alert("Please upload a MusicXML file.");
+        if (typeof showStudioNotice === "function") {
+            showStudioNotice("Choose a MusicXML file first.");
+        } else {
+            alert("Please upload a MusicXML file.");
+        }
         return;
     }
 
-    await loadScoreFromSource(fileInput.files[0]);
+    try {
+        await loadScoreFromSource(fileInput.files[0]);
+    } catch (error) {
+        console.error(error);
+        document.body.classList.add("score-ready");
+        if (typeof showStudioNotice === "function") {
+            showStudioNotice("That file could not be read.");
+        } else {
+            alert("That file could not be read.");
+        }
+    }
 }
 
 function getAllMeasureNumbers() {
@@ -168,11 +187,37 @@ function updatePageChrome() {
     if (label) {
         label.textContent = "Page " + currentScorePage + " of " + total;
     }
+    document.body.classList.toggle("is-playing", isPlaybackActive);
 
     const prevBtn = document.getElementById("prevPageBtn");
     const nextBtn = document.getElementById("nextPageBtn");
-    if (prevBtn) prevBtn.disabled = isPlaybackActive || currentScorePage <= 1;
-    if (nextBtn) nextBtn.disabled = isPlaybackActive || currentScorePage >= total;
+    const bpmInput = document.getElementById("bpmInput");
+    const bpmUp = document.getElementById("bpmUp");
+    const bpmDown = document.getElementById("bpmDown");
+    const playingHint = "Unavailable while playing";
+
+    if (prevBtn) {
+        prevBtn.disabled = isPlaybackActive || currentScorePage <= 1;
+        prevBtn.title = isPlaybackActive ? playingHint : "Previous page";
+    }
+    if (nextBtn) {
+        nextBtn.disabled = isPlaybackActive || currentScorePage >= total;
+        nextBtn.title = isPlaybackActive ? playingHint : "Next page";
+    }
+    if (bpmInput) {
+        bpmInput.disabled = isPlaybackActive;
+        bpmInput.title = isPlaybackActive ? playingHint : "Tempo in beats per minute";
+    }
+    if (bpmUp) bpmUp.disabled = isPlaybackActive;
+    if (bpmDown) bpmDown.disabled = isPlaybackActive;
+
+    const placeBtn = document.getElementById("placeCursorBtn");
+    if (placeBtn) {
+        placeBtn.disabled = isPlaybackActive;
+        placeBtn.title = isPlaybackActive ? playingHint : "Place start cursor";
+        placeBtn.classList.toggle("is-active", Boolean(isPlacingCursor));
+        placeBtn.setAttribute("aria-pressed", isPlacingCursor ? "true" : "false");
+    }
 }
 
 function sizeOsmdPageToContainer() {
@@ -197,6 +242,13 @@ function showScorePage(pageNumber) {
     const osmdPage = range?.osmdPage || currentScorePage;
     const canvases = document.querySelectorAll("#score-container [id^='osmdCanvasPage']");
 
+    const sheet = document.querySelector(".sheet");
+    if (sheet && !isPlaybackActive) {
+        sheet.classList.remove("is-turning");
+        void sheet.offsetWidth;
+        sheet.classList.add("is-turning");
+    }
+
     canvases.forEach((canvas, index) => {
         const pageIndex = index + 1;
         const visible = pageIndex === osmdPage;
@@ -215,7 +267,23 @@ function showScorePage(pageNumber) {
         canvas.style.transform = `translateY(${-startY}px)`;
     });
 
+    fitSheetFrame();
     updatePageChrome();
+}
+
+function fitSheetFrame() {
+    const container = document.getElementById("score-container");
+    const sheet = document.querySelector(".sheet");
+    const stage = document.getElementById("score-stage");
+    if (!container || !sheet || !stage) return;
+
+    const range = scorePageRanges[currentScorePage - 1];
+    const svg = container.querySelector("svg");
+    const svgHeight = Number(svg?.getAttribute("height")) || container.scrollHeight || 240;
+    const startY = Math.max(0, Math.min(range?.startY || 0, svgHeight));
+    const endY = Math.max(startY, Math.min(range?.endY || svgHeight, svgHeight));
+    const sliceHeight = Math.max(160, endY - startY);
+    sheet.style.height = Math.min(stage.clientHeight, sliceHeight + 72) + "px";
 }
 
 function initScorePages() {
@@ -268,8 +336,8 @@ function scrollToMeasure(measureNumber) {
     currentMeasure = measureNumber;
     showScorePage(getPageForMeasure(measureNumber));
 
-    document.getElementById("measureDisplay").innerText =
-        "Current Measure: " + measureNumber;
+    const measureLabel = document.getElementById("measureDisplay");
+    if (measureLabel) measureLabel.textContent = "Measure " + measureNumber;
 }
 
 async function startMicrophoneSync() {

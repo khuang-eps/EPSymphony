@@ -1,38 +1,104 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>EPSymphony</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,520;9..144,640&family=Outfit:wght@360;480;560&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../static/css/styles.css">
 </head>
 
 <body>
+    <div class="app">
+        <header class="topbar">
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true">EP</span>
+                <div class="brand-copy">
+                    <h1>EPSymphony</h1>
+                    <p>Practice studio</p>
+                </div>
+            </div>
 
-    <div class="toolbar">
-        <h1>EPSymphony</h1>
+            <div class="piece">
+                <p id="pieceTitle">Opening score</p>
+                <p id="pieceByline">Preparing the stand</p>
+            </div>
 
-        <label>BPM:</label>
-        <input type="number" id="bpmInput" value="120">
+            <div class="readout">
+                <p id="measureDisplay">Measure 1</p>
+                <p id="pageDisplay">Page 1 of 1</p>
+            </div>
+        </header>
 
-        <input type="file" id="fileInput" accept=".musicxml, .xml, .mxl">
+        <main id="score-stage">
+            <div class="sheet">
+                <div id="score-container"></div>
+                <div class="sheet-loading" id="sheetLoading">
+                    <div class="metronome" aria-hidden="true">
+                        <span class="metronome-arm"></span>
+                    </div>
+                    <p>Setting the page</p>
+                </div>
+            </div>
+        </main>
 
-        <br>
+        <footer class="dock" aria-label="Playback controls">
+            <div class="tempo" role="group" aria-label="Tempo">
+                <button type="button" id="bpmDown" aria-label="Decrease tempo">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </button>
+                <label class="tempo-readout">
+                    <input type="number" id="bpmInput" value="120" min="30" max="300" inputmode="numeric" aria-label="Tempo in beats per minute">
+                    <span>BPM</span>
+                </label>
+                <button type="button" id="bpmUp" aria-label="Increase tempo">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v12M6 12h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </button>
+            </div>
 
-        <button onclick="loadUploadedScore()">Load Score</button>
-        <button onclick="startPlayback()">Play</button>
-        <button onclick="stopPlayback()">Stop Playback</button>
-        <button id="prevPageBtn" onclick="prevPage()">Previous Page</button>
-        <button id="nextPageBtn" onclick="nextPage()">Next Page</button>
+            <div class="score-picker">
+                <label class="file-chip">
+                    <input type="file" id="fileInput" accept=".musicxml,.xml,.mxl">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h7l5 5V20a1.5 1.5 0 0 1-1.5 1.5h-10.5A1.5 1.5 0 0 1 5.5 20V5A1.5 1.5 0 0 1 7 3.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3.5V9h5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                    <span id="fileLabel">Open MusicXML</span>
+                </label>
+                <button type="button" class="load-btn" onclick="loadUploadedScore()">Load</button>
+            </div>
 
-        <div class="score-meta">
-            <p id="measureDisplay">Current Measure: 1</p>
-            <p id="pageDisplay">Page 1 of 1</p>
-        </div>
+            <div class="transport" role="group" aria-label="Transport">
+                <button type="button" id="prevPageBtn" class="icon-btn" onclick="prevPage()" aria-label="Previous page">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6.5 9 12l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button type="button" id="placeCursorBtn" class="icon-btn" onclick="togglePlaceCursorMode()" aria-label="Place start cursor" aria-pressed="false" title="Place start cursor">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4v16M8 4h5.2a3.2 3.2 0 0 1 0 6.4H8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16.5" cy="16.5" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m18.7 18.7 2.3 2.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </button>
+                <button type="button" class="play-btn" onclick="startPlayback()" aria-label="Play">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.2 5.6v12.8L19 12 8.2 5.6z"/></svg>
+                </button>
+                <button type="button" class="stop-btn" onclick="stopPlayback()" aria-label="Stop playback">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1.6"/></svg>
+                </button>
+                <button type="button" id="muteSoundBtn" class="icon-btn" onclick="togglePlaybackSound()" aria-label="Mute sound" aria-pressed="false" title="Sound on">
+                    <svg class="icon-sound-on" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4.5 9.5h3.2L12 6.2v11.6L7.7 14.5H4.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                        <path d="M15.2 9.2a3.4 3.4 0 0 1 0 5.6M17.6 7a6.2 6.2 0 0 1 0 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                    <svg class="icon-sound-off" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4.5 9.5h3.2L12 6.2v11.6L7.7 14.5H4.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                        <path d="m15 10 5 5M20 10l-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <button type="button" id="nextPageBtn" class="icon-btn" onclick="nextPage()" aria-label="Next page">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6.5 15 12l-5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            </div>
+        </footer>
     </div>
 
-    <div id="score-stage">
-        <div id="score-container"></div>
-    </div>
+    <div class="notice" id="studioNotice" role="status" aria-live="polite"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/opensheetmusicdisplay/build/opensheetmusicdisplay.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tone/build/Tone.js"></script>
@@ -40,7 +106,65 @@
     <script src="../static/js/play_sheet_music.js"></script>
     <script src="../static/js/autoscroll.js"></script>
     <script src="../static/js/pdf_viewer.js"></script>
+    <script>
+        const bpmInput = document.getElementById("bpmInput");
+        const fileInput = document.getElementById("fileInput");
+        const fileLabel = document.getElementById("fileLabel");
+        const notice = document.getElementById("studioNotice");
+        let noticeTimer = null;
 
+        function nudgeBpm(delta) {
+            if (document.body.classList.contains("is-playing") || bpmInput.disabled) return;
+            const next = Math.min(300, Math.max(30, (Number(bpmInput.value) || 120) + delta));
+            bpmInput.value = next;
+        }
+
+        function showStudioNotice(message) {
+            notice.textContent = message;
+            notice.classList.add("is-visible");
+            clearTimeout(noticeTimer);
+            noticeTimer = setTimeout(() => notice.classList.remove("is-visible"), 2800);
+        }
+
+        document.getElementById("bpmDown").addEventListener("click", () => nudgeBpm(-1));
+        document.getElementById("bpmUp").addEventListener("click", () => nudgeBpm(1));
+
+        bpmInput.addEventListener("change", () => {
+            const value = Number(bpmInput.value);
+            if (!value || value < 30) bpmInput.value = 30;
+            if (value > 300) bpmInput.value = 300;
+        });
+
+        fileInput.addEventListener("change", () => {
+            const file = fileInput.files[0];
+            fileLabel.textContent = file ? file.name : "Open MusicXML";
+            fileLabel.title = file ? file.name : "";
+            if (file) loadUploadedScore();
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.target.closest("input, textarea, select")) return;
+            if (event.code === "Space") {
+                event.preventDefault();
+                if (document.body.classList.contains("is-playing")) stopPlayback();
+                else startPlayback();
+            } else if (event.code === "Escape") {
+                if (typeof setPlaceCursorMode === "function") setPlaceCursorMode(false);
+            } else if (event.code === "KeyC") {
+                if (typeof togglePlaceCursorMode === "function") togglePlaceCursorMode();
+            } else if (event.code === "KeyM") {
+                if (typeof togglePlaybackSound === "function") togglePlaybackSound();
+            } else if (event.code === "ArrowRight") {
+                nextPage();
+            } else if (event.code === "ArrowLeft") {
+                prevPage();
+            } else if (event.key === "-" || event.key === "_") {
+                nudgeBpm(event.shiftKey ? -5 : -1);
+            } else if (event.key === "=" || event.key === "+") {
+                nudgeBpm(event.shiftKey ? 5 : 1);
+            }
+        });
+    </script>
 </body>
 
 </html>
