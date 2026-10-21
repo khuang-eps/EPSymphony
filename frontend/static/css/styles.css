@@ -1,5 +1,54 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    background: #1f1f1f;
+    color: #f3f3f3;
+}
+
+h1 {
+    margin: 0 0 12px;
+}
+
+.toolbar {
+    padding: 12px 20px 8px;
+}
+
+.toolbar button,
+.toolbar input {
+    margin: 4px 4px 4px 0;
+}
+
+.score-meta {
+    display: flex;
+    gap: 24px;
+    margin: 8px 0 0;
+}
+
+.score-meta p {
+    margin: 0;
+}
+
+#score-stage {
+    display: flex;
+    justify-content: center;
+    padding: 8px 16px 16px;
+}
+
 #score-container {
-    height: 90vh;
-    overflow-y: scroll;
-    border: 1px solid black;
+    width: min(1400px, 94vw);
+    height: calc(100vh - 148px);
+    overflow: hidden;
+    background: #fff;
+    color: #000;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    border: 1px solid #d0d0d0;
+    padding-top: 28px;
+}
+
+#score-container [id^="osmdCanvasPage"] {
+    transform-origin: top left;
 }

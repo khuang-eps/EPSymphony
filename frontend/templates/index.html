@@ -8,31 +8,36 @@
 
 <body>
 
-    <h1>EPSymphony</h1>
+    <div class="toolbar">
+        <h1>EPSymphony</h1>
 
-    <label>BPM:</label>
-    <input type="number" id="bpmInput" value="120">
+        <label>BPM:</label>
+        <input type="number" id="bpmInput" value="120">
 
-    <br><br>
+        <input type="file" id="fileInput" accept=".musicxml, .xml, .mxl">
 
-    <input type="file" id="fileInput" accept=".musicxml, .xml, .mxl">
+        <br>
 
-    <br><br>
+        <button onclick="loadUploadedScore()">Load Score</button>
+        <button onclick="startPlayback()">Play</button>
+        <button onclick="stopPlayback()">Stop Playback</button>
+        <button id="prevPageBtn" onclick="prevPage()">Previous Page</button>
+        <button id="nextPageBtn" onclick="nextPage()">Next Page</button>
 
-    <button onclick="loadUploadedScore()">Load Score</button>
-    <button onclick="startAutoScroll()">Start</button>
-    <button onclick="stopAutoScroll()">Stop</button>
+        <div class="score-meta">
+            <p id="measureDisplay">Current Measure: 1</p>
+            <p id="pageDisplay">Page 1 of 1</p>
+        </div>
+    </div>
 
-    <p id="measureDisplay">Current Measure: 1</p>
+    <div id="score-stage">
+        <div id="score-container"></div>
+    </div>
 
-    <div id="score-container"></div>
-
-    <!-- OSMD -->
     <script src="https://cdn.jsdelivr.net/npm/opensheetmusicdisplay/build/opensheetmusicdisplay.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tone/build/Tone.js"></script>
     <script src="../static/js/analysis.js"></script>
     <script src="../static/js/play_sheet_music.js"></script>
-
     <script src="../static/js/autoscroll.js"></script>
     <script src="../static/js/pdf_viewer.js"></script>
 
